@@ -18,7 +18,7 @@ func contains(str string) bool {
 	return false
 }
 
-func flag(find string) string {
+func flags(find string) string {
 	for _, s := range os.Args[1:] {
 		if strings.Index(s, find) != -1 {
 			return s[len(find):]
@@ -62,12 +62,12 @@ func checkColor(color, slice *[]string) bool {
 
 func parseColors() ([]string, [][]int) {
 	str := os.Args[1]
-	colorstr := flag("--color=")
+	colorstr := flags("--color=")
 	colors := []string{}
 	if len(colorstr) != 0 {
 		colors = strings.Split(colorstr, ",")
 	}
-	slicestr := flag("--slice=")
+	slicestr := flags("--slice=")
 	slice := []string{}
 	if len(slicestr) != 0 {
 		slice = strings.Split(slicestr, ",")
@@ -97,6 +97,16 @@ func parseColors() ([]string, [][]int) {
 	}
 
 	return colors, slices
+}
+
+func checkAlign(align *string) {
+	if len(*align) == 0 {
+		*align = "left"
+	}
+	if *align != "left" && *align != "right" && *align != "center" && *align != "justify" {
+		fmt.Println("Wrong align!")
+		os.Exit(3)
+	}
 }
 
 func main() {
@@ -130,7 +140,7 @@ func main() {
 			return
 		}
 
-		// reverse := flag("--reverse=")
+		// reverse := flags("--reverse=")
 		// if len(reverse) != 0 {
 
 		// }
@@ -139,13 +149,14 @@ func main() {
 
 		colors, slices := parseColors()
 		a.InitColors(str, colors, &slices)
+		fmt.Println("Colors:")
+		fmt.Println(a.GetColor())
+		fmt.Println("_______")
 
-		align := flag("--align=")
-		if len(align) == 0 {
-			align = "left"
-		}
+		align := flags("--align=")
+		checkAlign(&align)
 
-		filename := flag("--output=")
+		filename := flags("--output=")
 		if len(filename) == 0 {
 			a.Print(align)
 		} else {

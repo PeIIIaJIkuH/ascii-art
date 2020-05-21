@@ -33,19 +33,23 @@ func (a *Art) Update() {
 	a.Init()
 }
 
-// func (a *Art) Apply(c byte, b Banner) {
-// 	big := b.ToBig(c)
-// 	a.arr[a.i] = append(a.arr[a.i], big)
-// }
-
 func (a *Art) Apply(str string, b Banner) {
 	for i := 0; i < len(str); i++ {
-		if str[i] == '\\' && str[i+1] == 'n' {
-			a.Update()
-			i += 2
+		if str[i] == '\\' && i+1 < len(str) {
+			if str[i+1] == 'n' {
+				a.Update()
+				i++
+				if i == len(str)-1 {
+					break
+				}
+				continue
+			}
 		}
 		big := b.ToBig(str[i])
 		a.arr[a.i] = append(a.arr[a.i], big)
+	}
+	if len(a.arr[a.i]) == 0 {
+		a.arr[a.i] = append(a.arr[a.i], []string{"", "", "", "", "", "", "", ""})
 	}
 }
 
@@ -60,21 +64,55 @@ func (a Art) Size(index int) int {
 func (a *Art) copy(index int) Art {
 	width := terminalWidth()
 	i, size := 0, 0
-	for ; size+len(a.arr[index][i+1][0]) < width; i++ {
+	for ; size < width; i++ {
 		size += len(a.arr[index][i][0])
 	}
+	i--
+	size -= len(a.arr[index][i][0])
 	temp := Art{0, [][][]string{a.arr[index][:i]}, [][]string{a.color[index][:i]}}
 	a.arr[index] = a.arr[index][i:]
 	a.color[index] = a.color[index][i:]
 	return temp
 }
 
-// temp := Art{}
-// temp.Init()
-// temp.i = 0
-// for j := 0; j < i; j++ {
-// 	temp.arr[0] = append(temp.arr[0], a.arr[index][j])
-// 	temp.color[0] = append(temp.color[0], a.color[index][j])
+func (a Art) simplePrint(align string, index int) {
+	width := terminalWidth()
+	left := 0
+	if align == "right" {
+		left = width - a.Size(index)
+	} else if align == "center" {
+		left = (width - a.Size(index)) / 2
+	}
+	for j := 0; j < 8; j++ {
+		printStr(" ", left)
+		for k := range a.arr[index] {
+			fmt.Printf(a.color[index][k], a.arr[index][k][j])
+		}
+		fmt.Println()
+	}
+}
+
+// func (a Art) words_and_size() (int, int) {
+
+// }
+
+func (a Art) printJustify() {
+
+}
+
+// func (a *Art) TrimLeadSpaces(index int) {
+// 	for i, j := range a.arr[index] {
+
+// 	}
+// }
+
+// func (a *Art) TrimTailSpaces(index int) {
+
+// }
+
+// func (a *Art) TrimSpaces(index int) {
+// 	a.TrimLeadSpaces(index)
+// 	a.TrimTailSpaces(index)
 // }
 
 func (a Art) Print(align string) {
@@ -82,20 +120,16 @@ func (a Art) Print(align string) {
 	for i := 0; i <= a.i; i++ {
 		for a.Size(i) > width {
 			c := a.copy(i)
-			c.Print("")
-		}
-		left := 0
-		if align == "right" {
-			left = width - a.Size(i)
-		} else if align == "center" {
-			left = (width - a.Size(i)) / 2
-		}
-		for j := 0; j < 8; j++ {
-			printStr(" ", left)
-			for k := range a.arr[i] {
-				fmt.Printf(a.color[i][k], a.arr[i][k][j])
+			if align == "justify" {
+				c.printJustify()
+			} else {
+				c.simplePrint(align, 0)
 			}
-			fmt.Println()
+		}
+		if align == "justify" {
+			a.printJustify()
+		} else {
+			a.simplePrint(align, i)
 		}
 	}
 }
@@ -124,17 +158,21 @@ func (a Art) Fprint(filename string) {
 func (a *Art) InitColors(str string, colors []string, slices *[][]int) {
 	j, index := 0, 0
 	for i := 0; i < len(str); i++ {
-		if str[i] == '\\' {
+		if str[i] == '\\' && i+1 < len(str) {
 			if str[i+1] == 'n' {
+				if len(a.color[j]) == 0 {
+					a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
+				}
 				j++
-				i += 2
+				i++
 				if len(*slices) > 0 {
 					(*slices)[index][1] += 2
-					for j := index + 1; j < len(*slices); j++ {
-						(*slices)[j][0] += 2
-						(*slices)[j][1] += 2
+					for k := index + 1; k < len(*slices); k++ {
+						(*slices)[k][0] += 2
+						(*slices)[k][1] += 2
 					}
 				}
+				continue
 			}
 		}
 		color := "white"
@@ -157,8 +195,10 @@ func (a *Art) InitColors(str string, colors []string, slices *[][]int) {
 			fmt.Println("Wrong color")
 			os.Exit(3)
 		}
-
 		a.color[j] = append(a.color[j], "\033[38;2;"+rgb+"%s\033[0m")
+	}
+	if len(a.color[j]) == 0 {
+		a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
 	}
 }
 
