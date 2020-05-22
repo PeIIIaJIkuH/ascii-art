@@ -86,6 +86,12 @@ func generateRgb(color string) string {
 		return "255;215;180m"
 	case "beige":
 		return "255;250;200m"
+	case "tomato":
+		return "255;99;71m"
+	case "gold":
+		return "255;215;0m"
+	case "salmon":
+		return "250;128;114m"
 	default:
 		arr := strings.Split(color, ".")
 		if len(arr) == 3 {

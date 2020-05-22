@@ -28,31 +28,31 @@ func flags(find string) string {
 }
 
 func checkColor(color, slice *[]string) bool {
+	if len(*color) == 0 && len(*slice) > 0 {
+		fmt.Println("Can not use flag --slice without flag --color!")
+		return false
+	}
 	if len(*slice) == 0 {
 		*color = (*color)[:1]
 	} else if len(*slice) != len(*color) {
-		min := len(*color)
-		if min > len(*slice) {
-			min = len(*slice)
-		}
-		*color = (*color)[:min]
-		*slice = (*slice)[:min]
+		fmt.Println("Sizes of colors and slices must be equal!")
+		return false
 	}
 	prevEnd := 0
 	for i := range *slice {
 		arr := strings.Split((*slice)[i], ":")
 		if len(arr) != 2 {
-			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different")
+			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
 			return false
 		}
 		if arr[0] == "" || arr[1] == "" {
-			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different")
+			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
 			return false
 		}
 		start, e1 := strconv.Atoi(arr[0])
 		end, e2 := strconv.Atoi(arr[1])
 		if start >= end || start < 0 || end < 0 || e1 != nil || e2 != nil || start < prevEnd {
-			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different")
+			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
 			return false
 		}
 		prevEnd = end
@@ -72,10 +72,8 @@ func parseColors() ([]string, [][]int) {
 	if len(slicestr) != 0 {
 		slice = strings.Split(slicestr, ",")
 	}
-	if len(colors) != 0 {
-		if !checkColor(&colors, &slice) {
-			os.Exit(3)
-		}
+	if !checkColor(&colors, &slice) {
+		os.Exit(3)
 	}
 
 	if len(slice) > 0 {
@@ -83,7 +81,7 @@ func parseColors() ([]string, [][]int) {
 		lastStart, _ := strconv.Atoi(last[0])
 		lastEnd, _ := strconv.Atoi(last[1])
 		if lastStart >= art.LenWithoutNewline(str) || lastEnd > art.LenWithoutNewline(str) {
-			fmt.Println("Slices must be in range of the word")
+			fmt.Println("Slices must be in range of the word!")
 			os.Exit(3)
 		}
 	}
@@ -114,7 +112,7 @@ func main() {
 	if len(args) >= 1 {
 		str := args[0]
 		if len(str) == 0 {
-			fmt.Println("String must contain at least 1 character")
+			fmt.Println("String must contain at least 1 character!")
 			return
 		}
 
@@ -136,7 +134,7 @@ func main() {
 			b.Init("../thinkertoy.txt")
 		}
 		if count > 1 {
-			fmt.Println("Please choose only 1 font style")
+			fmt.Println("Please choose only 1 font style!")
 			return
 		}
 
@@ -166,11 +164,11 @@ func main() {
 			fmt.Println(a.GetColor())
 		} else {
 			if align != "" && align != "left" || len(colors) != 0 {
-				fmt.Println("Can not write to file with these flags")
+				fmt.Println("Can not write to file with these flags!")
 				return
 			}
 			a.Fprint(filename)
-			fmt.Println("Done")
+			fmt.Println("Done.")
 		}
 	}
 }

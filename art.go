@@ -151,7 +151,7 @@ func (a Art) printJustify(index int, b Banner) {
 			} else {
 				count++
 				printStr(" ", between)
-				if remainder < count {
+				if count < remainder {
 					printStr(" ", remainder)
 				}
 			}
@@ -230,6 +230,11 @@ func (a *Art) InitColors(colors []string, slices *[][]int, b Banner) {
 			if b.Find(a.arr[i][j]) != 0 {
 				if colorIndex >= len(colors) {
 					a.color[i] = append(a.color[i], "\033[38;2;255;255;255m%s\033[0m")
+					continue
+				}
+				if len(*slices) == 0 {
+					rgb := generateRgb(colors[0])
+					a.color[i] = append(a.color[i], "\033[38;2;"+rgb+"%s\033[0m")
 					continue
 				}
 				if index >= (*slices)[colorIndex][0] && index < (*slices)[colorIndex][1] {
