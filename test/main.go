@@ -151,9 +151,9 @@ func main() {
 		align := flags("--align=")
 		checkAlign(&align)
 
-		if align == "justify" {
-			a.TrimAllSpaces(b)
-		}
+		// if align == "justify" {
+		// 	a.TrimAllSpaces(b)
+		// }
 
 		colors, slices := parseColors()
 		a.InitColors(colors, slices, b)
