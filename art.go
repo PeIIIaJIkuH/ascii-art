@@ -58,6 +58,12 @@ func (a *Art) Apply(str string, b Banner) {
 				a.arr[a.i] = append(a.arr[a.i], b.ToBig('\\'))
 				i++
 			}
+			if str[i+1] == 't' {
+				for j := 0; j < 4; j++ {
+					a.arr[a.i] = append(a.arr[a.i], b.ToBig(' '))
+				}
+				i++
+			}
 			continue
 		}
 		big := b.ToBig(str[i])
@@ -128,7 +134,6 @@ func (a *Art) TrimMiddleSpaces(index int, b Banner) {
 func (a *Art) TrimSpaces(index int, b Banner) {
 	a.TrimLeadSpaces(index, b)
 	a.TrimTailSpaces(index, b)
-	a.TrimMiddleSpaces(index, b)
 }
 
 func (a *Art) TrimAllSpaces(b Banner) {
@@ -210,6 +215,9 @@ func (a Art) Print(align string, b Banner) {
 	for i := 0; i <= a.i; i++ {
 		for a.Size(i) > width {
 			a.TrimSpaces(i, b)
+			if align == "justify" {
+				a.TrimMiddleSpaces(i, b)
+			}
 			c := a.copy(i)
 			if align == "justify" {
 				c.printJustify(0, b)
@@ -219,6 +227,7 @@ func (a Art) Print(align string, b Banner) {
 		}
 		a.TrimSpaces(i, b)
 		if align == "justify" {
+			a.TrimMiddleSpaces(i, b)
 			a.printJustify(i, b)
 		} else {
 			a.simplePrint(align, i)
