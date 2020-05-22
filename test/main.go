@@ -147,18 +147,21 @@ func main() {
 
 		a.Apply(str, b)
 
+		align := flags("--align=")
+		checkAlign(&align)
+
 		colors, slices := parseColors()
-		a.InitColors(str, colors, &slices)
+		a.InitColors(colors, &slices, b)
 		fmt.Println("Colors:")
 		fmt.Println(a.GetColor())
 		fmt.Println("_______")
 
-		align := flags("--align=")
-		checkAlign(&align)
-
 		filename := flags("--output=")
 		if len(filename) == 0 {
-			a.Print(align)
+			a.Print(align, b)
+			fmt.Println("Updated:")
+			fmt.Println(a.GetColor())
+			fmt.Println("_______")
 		} else {
 			if align != "" && align != "left" || len(colors) != 0 {
 				fmt.Println("Can not write to file with these flags")

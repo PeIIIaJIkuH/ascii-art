@@ -92,42 +92,56 @@ func (a Art) simplePrint(align string, index int) {
 	}
 }
 
-// func (a Art) words_and_size() (int, int) {
-
-// }
-
-func (a Art) printJustify() {
-
+func (a *Art) TrimLeadSpaces(index int, b Banner) {
+	for _, i := range a.arr[index] {
+		if b.Find(i) != 0 {
+			return
+		}
+		a.arr[index] = a.arr[index][1:]
+		temp := a.color[index][0]
+		fmt.Println(index)
+		for j := 1; j < len(a.color[index]); j++ {
+			temp, a.color[index][j] = a.color[index][j], temp
+		}
+		a.color[index] = a.color[index][1:]
+	}
 }
 
-// func (a *Art) TrimLeadSpaces(index int) {
-// 	for i, j := range a.arr[index] {
+func (a *Art) TrimTailSpaces(index int, b Banner) {
+	for i := len(a.arr[index]) - 1; i >= 0; i-- {
+		if b.Find(a.arr[index][i]) != 0 {
+			return
+		}
+		a.arr[index] = a.arr[index][:i]
+		a.color[index] = a.color[index][:i]
+	}
+}
 
-// 	}
-// }
+func (a *Art) TrimSpaces(index int, b Banner) {
+	a.TrimLeadSpaces(index, b)
+	a.TrimTailSpaces(index, b)
+}
 
-// func (a *Art) TrimTailSpaces(index int) {
+func (a Art) printJustify(b Banner) {
+	for i := range a.arr {
+		a.TrimSpaces(i, b)
+		a.simplePrint("", i)
+	}
+}
 
-// }
-
-// func (a *Art) TrimSpaces(index int) {
-// 	a.TrimLeadSpaces(index)
-// 	a.TrimTailSpaces(index)
-// }
-
-func (a Art) Print(align string) {
+func (a Art) Print(align string, b Banner) {
 	width := terminalWidth()
 	for i := 0; i <= a.i; i++ {
 		for a.Size(i) > width {
 			c := a.copy(i)
 			if align == "justify" {
-				c.printJustify()
+				c.printJustify(b)
 			} else {
 				c.simplePrint(align, 0)
 			}
 		}
 		if align == "justify" {
-			a.printJustify()
+			a.printJustify(b)
 		} else {
 			a.simplePrint(align, i)
 		}
@@ -155,59 +169,91 @@ func (a Art) Fprint(filename string) {
 	}
 }
 
-func (a *Art) InitColors(str string, colors []string, slices *[][]int) {
-	j, index := 0, 0
-	for i := 0; i < len(str); i++ {
-		if str[i] == '\\' && i+1 < len(str) {
-			if str[i+1] == 'n' {
-				if len(a.color[j]) == 0 {
-					a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
+func (a *Art) InitColors(colors []string, slices *[][]int, b Banner) {
+	fmt.Println(colors)
+	fmt.Println(*slices)
+	index, colorIndex := 0, 0
+	for i := range a.arr {
+		for j := range a.arr[i] {
+			if b.Find(a.arr[i][j]) != 0 {
+				if colorIndex >= len(colors) {
+					a.color[i] = append(a.color[i], "\033[38;2;255;255;255m%s\033[0m")
+					continue
 				}
-				j++
-				i++
-				if len(*slices) > 0 {
-					(*slices)[index][1] += 2
-					for k := index + 1; k < len(*slices); k++ {
-						(*slices)[k][0] += 2
-						(*slices)[k][1] += 2
+				if index >= (*slices)[colorIndex][0] && index < (*slices)[colorIndex][1] {
+					rgb := generateRgb(colors[colorIndex])
+					if len(rgb) == 0 {
+						fmt.Println("Wrong color")
+						os.Exit(3)
+					}
+					a.color[i] = append(a.color[i], "\033[38;2;"+rgb+"%s\033[0m")
+					if index == (*slices)[colorIndex][1]-1 {
+						colorIndex++
 					}
 				}
-				continue
-			}
-		}
-		color := "white"
-		if len(colors) == 0 {
-			color = "white"
-		} else if len(colors) == 1 {
-			color = colors[0]
-		} else if i >= (*slices)[index][0] && i < (*slices)[index][1] {
-			color = colors[index]
-			if i == (*slices)[index][1]-1 && index < len(colors)-1 {
 				index++
-			}
-			if i >= (*slices)[len((*slices))-1][1] {
-				color = "white"
+			} else if b.Find(a.arr[i][j]) == 0 {
+				a.color[i] = append(a.color[i], "\033[38;2;255;255;255m%s\033[0m")
 			}
 		}
-
-		rgb := generateRgb(color)
-		if len(rgb) == 0 {
-			fmt.Println("Wrong color")
-			os.Exit(3)
-		}
-		a.color[j] = append(a.color[j], "\033[38;2;"+rgb+"%s\033[0m")
-	}
-	if len(a.color[j]) == 0 {
-		a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
 	}
 }
 
-// func (a *Art) ToArt(filename string) {
-// 	file, err := ioutil.ReadFile(filename)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 		return
-// 	}
-// 	str := string(file)
+// func (a *Art) InitColors(str string, colors []string, slices *[][]int, align string) {
+// 	fmt.Println("Printing colors:", a.color)
+// 	fmt.Println(slices)
+// 	j, index := 0, 0
+// 	for i := 0; i < len(str); i++ {
+// 		if str[i] == '\\' && i+1 < len(str) {
+// 			if str[i+1] == 'n' {
+// 				if len(a.color[j]) == 0 {
+// 					a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
+// 				}
+// 				j++
+// 				i++
+// 				if len(*slices) > 0 {
+// 					for k := index; k < len(*slices); k++ {
+// 						(*slices)[k][0] += 2
+// 						(*slices)[k][1] += 2
+// 					}
+// 				}
+// 				continue
+// 			}
+// 		}
+// 		if align == "justify" && str[i] == ' ' {
+// 			if len(*slices) > 0 {
+// 				for k := index; k < len(*slices); k++ {
+// 					(*slices)[k][0]++
+// 					(*slices)[k][1]++
+// 				}
+// 			}
+// 			continue
+// 		}
 
+// 		color := "white"
+// 		if len(colors) == 0 {
+// 			color = "white"
+// 		} else if len(*slices) == 0 {
+// 			color = colors[index]
+// 		} else if i >= (*slices)[index][0] && i < (*slices)[index][1] {
+// 			color = colors[index]
+// 			if i == (*slices)[index][1]-1 && index < len(colors)-1 {
+// 				index++
+// 			}
+// 		}
+// 		if len((*slices)) >= 1 && i >= (*slices)[len((*slices))-1][1] {
+// 			color = "white"
+// 		}
+
+// 		rgb := generateRgb(color)
+// 		if len(rgb) == 0 {
+// 			fmt.Println("Wrong color")
+// 			os.Exit(3)
+// 		}
+// 		a.color[j] = append(a.color[j], "\033[38;2;"+rgb+"%s\033[0m")
+// 	}
+// 	if len(a.color[j]) == 0 {
+// 		a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
+// 	}
+// 	fmt.Println(slices)
 // }

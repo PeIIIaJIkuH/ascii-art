@@ -73,3 +73,12 @@ func (b Banner) ToBig(symbol byte) []string {
 	index := strings.Index(alpha, string(symbol))
 	return b.arr[index]
 }
+
+func (b Banner) Find(big []string) int {
+	for i, j := range b.arr {
+		if isEqual(big, j) {
+			return i
+		}
+	}
+	return -1
+}
