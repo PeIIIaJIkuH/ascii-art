@@ -32,30 +32,32 @@ func checkColor(color, slice *[]string) bool {
 		fmt.Println("Can not use flag --slice without flag --color!")
 		return false
 	}
-	if len(*slice) == 0 {
-		*color = (*color)[:1]
-	} else if len(*slice) != len(*color) {
-		fmt.Println("Sizes of colors and slices must be equal!")
-		return false
-	}
-	prevEnd := 0
-	for i := range *slice {
-		arr := strings.Split((*slice)[i], ":")
-		if len(arr) != 2 {
-			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
+	if len(*color) > 0 {
+		if len(*slice) == 0 {
+			*color = (*color)[:1]
+		} else if len(*slice) != len(*color) {
+			fmt.Println("Sizes of colors and slices must be equal!")
 			return false
 		}
-		if arr[0] == "" || arr[1] == "" {
-			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
-			return false
+		prevEnd := 0
+		for i := range *slice {
+			arr := strings.Split((*slice)[i], ":")
+			if len(arr) != 2 {
+				fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
+				return false
+			}
+			if arr[0] == "" || arr[1] == "" {
+				fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
+				return false
+			}
+			start, e1 := strconv.Atoi(arr[0])
+			end, e2 := strconv.Atoi(arr[1])
+			if start >= end || start < 0 || end < 0 || e1 != nil || e2 != nil || start < prevEnd {
+				fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
+				return false
+			}
+			prevEnd = end
 		}
-		start, e1 := strconv.Atoi(arr[0])
-		end, e2 := strconv.Atoi(arr[1])
-		if start >= end || start < 0 || end < 0 || e1 != nil || e2 != nil || start < prevEnd {
-			fmt.Println("Slice must be in 'a:b' format, where a and b are non-negative integers, a < b, each slice must be different!")
-			return false
-		}
-		prevEnd = end
 	}
 	return true
 }
@@ -148,20 +150,20 @@ func main() {
 		align := flags("--align=")
 		checkAlign(&align)
 
-		if align == "jsutify" {
+		if align == "justify" {
 			a.TrimAllSpaces(b)
 		}
 
 		colors, slices := parseColors()
-		a.InitColors(colors, &slices, b)
-		fmt.Println("Colors:")
-		fmt.Println(a.GetColor())
+		a.InitColors(colors, slices, b)
+		// fmt.Println("Colors:")
+		// fmt.Println(a.GetColor())
 
 		filename := flags("--output=")
 		if len(filename) == 0 {
 			a.Print(align, b)
-			fmt.Println("Updated:")
-			fmt.Println(a.GetColor())
+			// fmt.Println("Updated:")
+			// fmt.Println(a.GetColor())
 		} else {
 			if align != "" && align != "left" || len(colors) != 0 {
 				fmt.Println("Can not write to file with these flags!")
