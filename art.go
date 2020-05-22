@@ -133,7 +133,6 @@ func (a Art) spaceCount(index int, b Banner) int {
 }
 
 func (a Art) printJustify(index int, b Banner) {
-	// a.simplePrint("", index)
 	width := terminalWidth()
 	spaceCount := a.spaceCount(index, b)
 	size := a.Size(index) - spaceCount*len(b.arr[0][0])
@@ -203,7 +202,7 @@ func (a Art) Print(align string, b Banner) {
 				c.simplePrint(align, 0)
 			}
 		}
-		// a.TrimSpaces(i, b)
+		a.TrimSpaces(i, b)
 		if align == "justify" {
 			a.printJustify(i, b)
 		} else {
@@ -238,8 +237,15 @@ func (a *Art) InitColors(colors []string, slices [][]int, b Banner) {
 	for i := range a.arr {
 		for j := range a.arr[i] {
 			if b.Find(a.arr[i][j]) != 0 {
-				if len(colors) == 0 || len(slices) == 0 || colorIndex >= len(colors) {
+				if len(colors) == 0 || colorIndex >= len(colors) {
 					a.color[i] = append(a.color[i], "\033[38;2;255;255;255m%s\033[0m")
+				} else if len(slices) == 0 {
+					rgb := generateRgb(colors[0])
+					if len(rgb) == 0 {
+						fmt.Println("Wrong color!")
+						os.Exit(3)
+					}
+					a.color[i] = append(a.color[i], "\033[38;2;"+rgb+"%s\033[0m")
 				} else if index >= slices[colorIndex][0] && index < slices[colorIndex][1] {
 					rgb := generateRgb(colors[colorIndex])
 					if len(rgb) == 0 {
