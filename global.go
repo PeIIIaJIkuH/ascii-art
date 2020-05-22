@@ -168,16 +168,12 @@ func printArr(arr [][]string) {
 func toBig(arr [][]string, index, start, end int) []string {
 	big := []string{}
 	for i := 0; i < 8; i++ {
-		fmt.Println("End:", end)
-		// if start < 0 || end > len(arr[index]) {
-		// 	return []string{}
-		// }
 		big = append(big, arr[index][i][start:end])
 	}
 	return big
 }
 
-var fonts []string = []string{"../standard.txt", "../shadow.txt", "../thinkertoy.txt"}
+var fonts []string = []string{"../shadow.txt", "../thinkertoy.txt"}
 var fontIndex int = 0
 
 func Reverse(filename string, b Banner) {
@@ -198,19 +194,18 @@ func Reverse(filename string, b Banner) {
 		start, add := 0, 1
 		for start < len(arr[i][0]) {
 			for b.Find(toBig(arr, i, start, start+add)) == -1 {
+				if start+add >= len(arr[i][0]) {
+					if fontIndex > 1 {
+						fmt.Println("Incorrect reverse file!")
+						os.Exit(3)
+					}
+					b.Init(fonts[fontIndex])
+					Reverse(filename, b)
+					fontIndex++
+					return
+				}
 				add++
 			}
-			// if b.Find(toBig(arr, i, start, start+add)) == -2 {
-			// 	fmt.Println(fontIndex)
-			// 	if fontIndex > 2 {
-			// 		fmt.Println("Incorrect reverse file!")
-			// 		os.Exit(3)
-			// 	}
-			// 	b.Init(fonts[fontIndex])
-			// 	fontIndex++
-			// 	Reverse(filename, b)
-			// 	os.Exit(3)
-			// }
 			find := b.Find(toBig(arr, i, start, start+add))
 			res += string(alpha[find])
 			start += add

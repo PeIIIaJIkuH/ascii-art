@@ -75,9 +75,6 @@ func (b Banner) ToBig(symbol byte) []string {
 }
 
 func (b Banner) Find(big []string) int {
-	// if len(big) == 0 {
-	// 	return -2
-	// }
 	for i, j := range b.arr {
 		if isEqual(big, j) {
 			return i
