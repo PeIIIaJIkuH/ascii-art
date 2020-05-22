@@ -173,7 +173,7 @@ func toBig(arr [][]string, index, start, end int) []string {
 	return big
 }
 
-var fonts []string = []string{"../shadow.txt", "../thinkertoy.txt"}
+var fonts []string = []string{"../standard.txt", "../shadow.txt", "../thinkertoy.txt"}
 var fontIndex int = 0
 
 func Reverse(filename string, b Banner) {
@@ -195,13 +195,13 @@ func Reverse(filename string, b Banner) {
 		for start < len(arr[i][0]) {
 			for b.Find(toBig(arr, i, start, start+add)) == -1 {
 				if start+add >= len(arr[i][0]) {
-					if fontIndex > 1 {
+					fontIndex++
+					if fontIndex > 2 {
 						fmt.Println("Incorrect reverse file!")
 						os.Exit(3)
 					}
 					b.Init(fonts[fontIndex])
 					Reverse(filename, b)
-					fontIndex++
 					return
 				}
 				add++
