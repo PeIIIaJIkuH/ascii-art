@@ -42,8 +42,23 @@ func (a *Art) Apply(str string, b Banner) {
 				if i == len(str)-1 {
 					break
 				}
-				continue
 			}
+			if str[i+1] == '\'' {
+				a.arr[a.i] = append(a.arr[a.i], b.ToBig('\''))
+				i++
+			}
+			if str[i+1] == '"' {
+				a.arr[a.i] = append(a.arr[a.i], b.ToBig('"'))
+			}
+			if str[i+1] == '!' {
+				a.arr[a.i] = append(a.arr[a.i], b.ToBig('!'))
+				i++
+			}
+			if str[i+1] == '\\' {
+				a.arr[a.i] = append(a.arr[a.i], b.ToBig('\\'))
+				i++
+			}
+			continue
 		}
 		big := b.ToBig(str[i])
 		a.arr[a.i] = append(a.arr[a.i], big)
