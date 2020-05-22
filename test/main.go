@@ -140,10 +140,11 @@ func main() {
 			return
 		}
 
-		// reverse := flags("--reverse=")
-		// if len(reverse) != 0 {
-
-		// }
+		reverse := flags("--reverse=")
+		if len(reverse) != 0 {
+			art.Reverse(reverse, b)
+			return
+		}
 
 		a.Apply(str, b)
 
@@ -156,14 +157,10 @@ func main() {
 
 		colors, slices := parseColors()
 		a.InitColors(colors, slices, b)
-		// fmt.Println("Colors:")
-		// fmt.Println(a.GetColor())
 
 		filename := flags("--output=")
 		if len(filename) == 0 {
 			a.Print(align, b)
-			// fmt.Println("Updated:")
-			// fmt.Println(a.GetColor())
 		} else {
 			if align != "" && align != "left" || len(colors) != 0 {
 				fmt.Println("Can not write to file with these flags!")

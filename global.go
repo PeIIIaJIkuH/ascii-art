@@ -2,6 +2,7 @@ package art
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -111,4 +112,113 @@ func printStr(str string, count int) {
 	for i := 0; i < count; i++ {
 		fmt.Print(str)
 	}
+}
+
+func toArr(str string) [][]string {
+	index, newlines := 0, 0
+	arr := [][]string{{"", "", "", "", "", "", "", ""}}
+	for len(str) > 0 {
+		arr[index][newlines%8] += str[:strings.Index(str, "\n")]
+		str = str[strings.Index(str, "\n")+1:]
+		if newlines%8 == 7 && len(str) > 1 {
+			index++
+			arr = append(arr, []string{"", "", "", "", "", "", "", ""})
+		}
+		newlines++
+	}
+	return arr
+}
+
+func areEqual(arr []string) bool {
+	for i := 0; i < 8; i++ {
+		for j := i + 1; j < 8; j++ {
+			if len(arr[i]) != len(arr[j]) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func checkReverse(arr [][]string, str string) bool {
+	if strings.Count(str, "\n")%8 != 0 {
+		return false
+	}
+	for _, i := range arr {
+		if len(i) != 8 {
+			return false
+		}
+	}
+	for _, i := range arr {
+		if !areEqual(i) {
+			return false
+		}
+	}
+	return true
+}
+
+func printArr(arr [][]string) {
+	for _, i := range arr {
+		for _, j := range i {
+			fmt.Println("|" + j + "|")
+		}
+	}
+}
+
+func toBig(arr [][]string, index, start, end int) []string {
+	big := []string{}
+	for i := 0; i < 8; i++ {
+		fmt.Println("End:", end)
+		// if start < 0 || end > len(arr[index]) {
+		// 	return []string{}
+		// }
+		big = append(big, arr[index][i][start:end])
+	}
+	return big
+}
+
+var fonts []string = []string{"../standard.txt", "../shadow.txt", "../thinkertoy.txt"}
+var fontIndex int = 0
+
+func Reverse(filename string, b Banner) {
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(3)
+	}
+	str := string(file)
+	arr := toArr(str)
+	if !checkReverse(arr, str) {
+		fmt.Println("Incorrect reverse file!")
+		os.Exit(3)
+	}
+	alpha := Alphabet()
+	res := ""
+	for i := 0; i < len(arr); i++ {
+		start, add := 0, 1
+		for start < len(arr[i][0]) {
+			for b.Find(toBig(arr, i, start, start+add)) == -1 {
+				add++
+			}
+			// if b.Find(toBig(arr, i, start, start+add)) == -2 {
+			// 	fmt.Println(fontIndex)
+			// 	if fontIndex > 2 {
+			// 		fmt.Println("Incorrect reverse file!")
+			// 		os.Exit(3)
+			// 	}
+			// 	b.Init(fonts[fontIndex])
+			// 	fontIndex++
+			// 	Reverse(filename, b)
+			// 	os.Exit(3)
+			// }
+			find := b.Find(toBig(arr, i, start, start+add))
+			res += string(alpha[find])
+			start += add
+			add = 1
+		}
+		if i < len(arr)-1 {
+			res += "\n"
+		}
+	}
+	fmt.Println(res)
 }
