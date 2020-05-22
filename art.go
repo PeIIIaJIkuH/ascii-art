@@ -75,34 +75,12 @@ func (a *Art) copy(index int) Art {
 	return temp
 }
 
-func (a Art) simplePrint(align string, index int) {
-	width := terminalWidth()
-	left := 0
-	if align == "right" {
-		left = width - a.Size(index)
-	} else if align == "center" {
-		left = (width - a.Size(index)) / 2
-	}
-	for j := 0; j < 8; j++ {
-		printStr(" ", left)
-		for k := range a.arr[index] {
-			fmt.Printf(a.color[index][k], a.arr[index][k][j])
-		}
-		fmt.Println()
-	}
-}
-
 func (a *Art) TrimLeadSpaces(index int, b Banner) {
 	for _, i := range a.arr[index] {
 		if b.Find(i) != 0 {
 			return
 		}
 		a.arr[index] = a.arr[index][1:]
-		temp := a.color[index][0]
-		fmt.Println(index)
-		for j := 1; j < len(a.color[index]); j++ {
-			temp, a.color[index][j] = a.color[index][j], temp
-		}
 		a.color[index] = a.color[index][1:]
 	}
 }
@@ -117,15 +95,87 @@ func (a *Art) TrimTailSpaces(index int, b Banner) {
 	}
 }
 
+func (a *Art) TrimMiddleSpaces(index int, b Banner) {
+	wasSpace := false
+	for i := 0; i < len(a.arr[index]); i++ {
+		if b.Find(a.arr[index][i]) != 0 {
+			wasSpace = false
+		} else if b.Find(a.arr[index][i]) == 0 && !wasSpace {
+			wasSpace = true
+		} else if b.Find(a.arr[index][i]) == 0 && wasSpace {
+			a.arr[index] = append(a.arr[index][:i], a.arr[index][i+1:]...)
+			a.color[index] = append(a.color[index][:i], a.color[index][i+1:]...)
+			i--
+		}
+	}
+}
+
 func (a *Art) TrimSpaces(index int, b Banner) {
 	a.TrimLeadSpaces(index, b)
 	a.TrimTailSpaces(index, b)
+	a.TrimMiddleSpaces(index, b)
 }
 
-func (a Art) printJustify(b Banner) {
+func (a *Art) TrimAllSpaces(b Banner) {
 	for i := range a.arr {
 		a.TrimSpaces(i, b)
-		a.simplePrint("", i)
+	}
+}
+
+func (a Art) spaceCount(b Banner) int {
+	count := 0
+	for _, i := range a.arr[0] {
+		if b.Find(i) == 0 {
+			count++
+		}
+	}
+	return count
+}
+
+func (a Art) printJustify(index int, b Banner) {
+	width := terminalWidth()
+	spaceCount := a.spaceCount(b)
+	wordCount := spaceCount + 1
+	size := a.Size(index) - spaceCount*len(b.arr[0][0])
+	emptySpace := width - size
+	between, remainder := 0, 0
+	if spaceCount != 0 {
+		between, remainder = emptySpace/spaceCount, (emptySpace % spaceCount)
+	}
+
+	for i := 0; i < 8; i++ {
+		count := 0
+		for j := range a.arr[index] {
+			if b.Index(a.arr[index][j]) != 0 {
+				fmt.Printf(a.color[index][j], a.arr[index][j][i])
+			} else {
+				count++
+				printStr(" ", between)
+				if remainder < count {
+					printStr(" ", remainder)
+				}
+			}
+		}
+		fmt.Println()
+	}
+
+	fmt.Println(width, spaceCount, wordCount, size)
+}
+
+func (a Art) simplePrint(align string, index int) {
+	width := terminalWidth()
+	left := 0
+	if align == "right" {
+		left = width - a.Size(index)
+	} else if align == "center" {
+		left = (width - a.Size(index)) / 2
+	}
+	for i := 0; i < 8; i++ {
+		printStr(" ", left)
+		for j := range a.arr[index] {
+			fmt.Printf(a.color[index][j], a.arr[index][j][i])
+		}
+		fmt.Println()
 	}
 }
 
@@ -133,15 +183,17 @@ func (a Art) Print(align string, b Banner) {
 	width := terminalWidth()
 	for i := 0; i <= a.i; i++ {
 		for a.Size(i) > width {
+			a.TrimSpaces(i, b)
 			c := a.copy(i)
 			if align == "justify" {
-				c.printJustify(b)
+				c.printJustify(0, b)
 			} else {
 				c.simplePrint(align, 0)
 			}
 		}
+		a.TrimSpaces(i, b)
 		if align == "justify" {
-			a.printJustify(b)
+			a.printJustify(i, b)
 		} else {
 			a.simplePrint(align, i)
 		}
@@ -198,62 +250,3 @@ func (a *Art) InitColors(colors []string, slices *[][]int, b Banner) {
 		}
 	}
 }
-
-// func (a *Art) InitColors(str string, colors []string, slices *[][]int, align string) {
-// 	fmt.Println("Printing colors:", a.color)
-// 	fmt.Println(slices)
-// 	j, index := 0, 0
-// 	for i := 0; i < len(str); i++ {
-// 		if str[i] == '\\' && i+1 < len(str) {
-// 			if str[i+1] == 'n' {
-// 				if len(a.color[j]) == 0 {
-// 					a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
-// 				}
-// 				j++
-// 				i++
-// 				if len(*slices) > 0 {
-// 					for k := index; k < len(*slices); k++ {
-// 						(*slices)[k][0] += 2
-// 						(*slices)[k][1] += 2
-// 					}
-// 				}
-// 				continue
-// 			}
-// 		}
-// 		if align == "justify" && str[i] == ' ' {
-// 			if len(*slices) > 0 {
-// 				for k := index; k < len(*slices); k++ {
-// 					(*slices)[k][0]++
-// 					(*slices)[k][1]++
-// 				}
-// 			}
-// 			continue
-// 		}
-
-// 		color := "white"
-// 		if len(colors) == 0 {
-// 			color = "white"
-// 		} else if len(*slices) == 0 {
-// 			color = colors[index]
-// 		} else if i >= (*slices)[index][0] && i < (*slices)[index][1] {
-// 			color = colors[index]
-// 			if i == (*slices)[index][1]-1 && index < len(colors)-1 {
-// 				index++
-// 			}
-// 		}
-// 		if len((*slices)) >= 1 && i >= (*slices)[len((*slices))-1][1] {
-// 			color = "white"
-// 		}
-
-// 		rgb := generateRgb(color)
-// 		if len(rgb) == 0 {
-// 			fmt.Println("Wrong color")
-// 			os.Exit(3)
-// 		}
-// 		a.color[j] = append(a.color[j], "\033[38;2;"+rgb+"%s\033[0m")
-// 	}
-// 	if len(a.color[j]) == 0 {
-// 		a.color[j] = append(a.color[j], "\033[38;2;255;255;255m%s\033[0m")
-// 	}
-// 	fmt.Println(slices)
-// }

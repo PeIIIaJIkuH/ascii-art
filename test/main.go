@@ -150,18 +150,20 @@ func main() {
 		align := flags("--align=")
 		checkAlign(&align)
 
+		if align == "jsutify" {
+			a.TrimAllSpaces(b)
+		}
+
 		colors, slices := parseColors()
 		a.InitColors(colors, &slices, b)
 		fmt.Println("Colors:")
 		fmt.Println(a.GetColor())
-		fmt.Println("_______")
 
 		filename := flags("--output=")
 		if len(filename) == 0 {
 			a.Print(align, b)
 			fmt.Println("Updated:")
 			fmt.Println(a.GetColor())
-			fmt.Println("_______")
 		} else {
 			if align != "" && align != "left" || len(colors) != 0 {
 				fmt.Println("Can not write to file with these flags")
